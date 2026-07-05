@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Gastro Kasse</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>🍽️ Gastro Kasse</h1>
+    <p>Einfaches Kassensystem für Restaurant · Handy · Tablet · PC</p>
+  </header>
+
+  <main class="app-layout">
+    <section class="panel">
+      <div class="top-row">
+        <h2>Speisekarte</h2>
+        <button class="secondary-btn" id="showAdminBtn">Admin</button>
+      </div>
+
+      <div id="categoryTabs" class="category-tabs"></div>
+      <div id="productGrid" class="product-grid"></div>
+
+      <div class="legal-note">
+        <strong>Wichtig:</strong> Diese Version ist ein Prototyp.
+        Für echten Einsatz in Deutschland brauchst du eine echte zertifizierte TSE-Anbindung,
+        GoBD-konforme Speicherung und DSFinV-K Export.
+      </div>
+    </section>
+
+    <aside class="panel cart-panel">
+      <h2>Bestellung</h2>
+
+      <label for="tableNumber">Tisch / Bestellung</label>
+      <input id="tableNumber" type="text" placeholder="z. B. Tisch 5" />
+
+      <div id="cartItems" class="cart-items"></div>
+
+      <div class="totals">
+        <div>
+          <span>Netto 19%</span>
+          <strong id="net19">0,00 €</strong>
+        </div>
+        <div>
+          <span>MwSt 19%</span>
+          <strong id="tax19">0,00 €</strong>
+        </div>
+        <div>
+          <span>Netto 7%</span>
+          <strong id="net7">0,00 €</strong>
+        </div>
+        <div>
+          <span>MwSt 7%</span>
+          <strong id="tax7">0,00 €</strong>
+        </div>
+        <div class="total-line">
+          <span>Gesamt</span>
+          <strong id="total">0,00 €</strong>
+        </div>
+      </div>
+
+      <label for="paymentMethod">Zahlart</label>
+      <select id="paymentMethod">
+        <option value="Bar">Bar</option>
+        <option value="Karte">Karte</option>
+        <option value="PayPal">PayPal</option>
+      </select>
+
+      <button class="primary-btn" id="checkoutBtn">Bezahlen / Bon erstellen</button>
+      <button class="danger-btn" id="clearCartBtn">Warenkorb leeren</button>
+
+      <pre id="receiptBox" class="receipt-box"></pre>
+    </aside>
+  </main>
+
+  <section id="adminModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="top-row">
+        <h2>Admin-Bereich</h2>
+        <button class="secondary-btn" id="closeAdminBtn">Schließen</button>
+      </div>
+
+      <h3>Neues Produkt</h3>
+
+      <div class="admin-form">
+        <input id="newProductName" type="text" placeholder="Produktname" />
+        <input id="newProductPrice" type="number" step="0.01" placeholder="Preis" />
+        <input id="newProductCategory" type="text" placeholder="Kategorie" />
+        <select id="newProductTax">
+          <option value="19">19% MwSt</option>
+          <option value="7">7% MwSt</option>
+        </select>
+        <button class="primary-btn" id="addProductBtn">Produkt speichern</button>
+      </div>
+
+      <h3>Daten</h3>
+      <div class="admin-actions">
+        <button class="secondary-btn" id="exportSalesBtn">Umsätze exportieren</button>
+        <button class="danger-btn" id="resetDataBtn">Alle Daten löschen</button>
+      </div>
+
+      <h3>TSE Status</h3>
+      <div class="tse-status">
+        <p><strong>Status:</strong> DEMO / noch keine echte TSE</p>
+        <p>Später wird hier Swissbit angebunden.</p>
+      </div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
