@@ -1,93 +1,56 @@
-# Gastro Kasse
+# Gastro Kasse Version 2
 
-Einfache Web-App für ein Restaurant / Café / Imbiss.
+Einfache Web-App für Restaurant / Café / Imbiss.
 
-## Ziel
+## Funktionen
 
-Diese Kasse soll sehr einfach bedienbar sein:
-
-- Produkt antippen
-- Tisch eingeben
-- Zahlart wählen
+- Handy, Tablet und PC
+- Produkte antippen
+- Warenkorb
+- Tische öffnen
+- Tische speichern
+- Offene Tische später weiter bearbeiten
+- Produkte hinzufügen
+- Produkte bearbeiten
+- Produkte löschen
 - Bon erstellen
-- Tagesumsatz exportieren
+- Bon drucken
+- Umsatz exportieren
+- Offene Tische exportieren
+- TSE-Platzhalter für Swissbit vorbereitet
 
-Die App funktioniert auf:
+## Start
 
-- Handy
-- Tablet
-- Laptop
-- PC
+`index.html` im Browser öffnen.
 
-## Aktueller Stand
+## Auf GitHub aktualisieren
 
-Das ist Version 1 als Prototyp.
-
-Enthalten:
+Dateien ersetzen:
 
 - `index.html`
 - `style.css`
 - `app.js`
+- `README.md`
 
-## Start lokal
+Dann im Terminal:
 
-Einfach `index.html` im Browser öffnen.
+```bash
+git add .
+git commit -m "Version 2 mit offenen Tischen und Produktverwaltung"
+git push
+```
 
-## Auf GitHub hochladen
+## Wichtig zu TSE
 
-1. Neues Repository erstellen, z. B. `gastro-kasse`
-2. Diese Dateien hochladen:
-   - `index.html`
-   - `style.css`
-   - `app.js`
-   - `README.md`
-3. Danach kannst du GitHub Pages aktivieren.
+Diese Version ist noch nicht legal fertig für echten Restaurant-Betrieb.
 
-## GitHub Pages aktivieren
+Für Deutschland brauchst du später:
 
-1. Repository öffnen
-2. Settings
-3. Pages
-4. Branch: `main`
-5. Folder: `/root`
-6. Save
-
-Danach bekommst du eine Webseite wie:
-
-`https://dein-name.github.io/gastro-kasse/`
-
-## Wichtiger Hinweis zu TSE
-
-Diese Version ist noch NICHT legal fertig für echten Restaurant-Betrieb in Deutschland.
-
-Für echten Einsatz brauchst du:
-
-- zertifizierte TSE
+- echte zertifizierte TSE
 - GoBD-konforme Speicherung
 - DSFinV-K Export
 - korrekte Bon-Pflichtangaben
 - keine nachträgliche Manipulation
-- Prüfung durch Steuerberater oder Kassen-Fachfirma
 
-## Swissbit TSE
-
-Im Code gibt es schon Platzhalter:
-
-- `startTseTransaction(order)`
-- `finishTseTransaction(order, tseStart)`
-
-Dort kann später Swissbit angebunden werden.
-
-Wichtig:
-Eine Webseite auf GitHub Pages kann normalerweise nicht direkt mit einer USB/SD/microSD-TSE sprechen.
-Dafür brauchen wir später ein Backend oder lokale Middleware.
-
-## Nächster Ausbau
-
-- Backend mit Node.js
-- SQLite Datenbank
-- Login für Admin
-- Produkte bearbeiten/löschen
-- Tagesabschluss
-- DSFinV-K Export vorbereiten
-- Swissbit TSE Integration vorbereiten
+GitHub Pages allein kann nicht direkt mit Swissbit USB/SD/microSD-TSE sprechen.
+Dafür brauchen wir später Backend oder Middleware.

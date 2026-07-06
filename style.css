@@ -53,6 +53,42 @@ body {
   align-items: center;
 }
 
+.table-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 14px;
+  margin: 12px 0;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+}
+
+.open-tables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.open-table-btn {
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 999px;
+  padding: 8px 12px;
+}
+
+.current-table {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
 .category-tabs {
   display: flex;
   gap: 8px;
@@ -140,9 +176,19 @@ button {
   margin-top: 12px;
 }
 
+.primary-small-btn {
+  background: #16a34a;
+  color: white;
+}
+
 .secondary-btn {
   background: #e5e7eb;
   color: #111827;
+}
+
+.full-btn {
+  width: 100%;
+  margin-top: 8px;
 }
 
 .danger-btn {
@@ -230,7 +276,7 @@ button {
 
 .modal-content {
   background: white;
-  max-width: 700px;
+  max-width: 800px;
   width: 100%;
   border-radius: 16px;
   padding: 18px;
@@ -248,14 +294,40 @@ button {
   gap: 8px;
 }
 
-.admin-form .primary-btn {
-  grid-column: 1 / -1;
+.admin-form .primary-btn,
+.admin-form .secondary-btn {
+  grid-column: span 2;
 }
 
 .admin-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
+}
+
+.admin-product-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-product-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  background: #f9fafb;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.edit-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.delete-btn {
+  background: #dc2626;
+  color: white;
 }
 
 .tse-status {
@@ -263,6 +335,27 @@ button {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 12px;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #receiptBox,
+  #receiptBox * {
+    visibility: visible;
+  }
+
+  #receiptBox {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    border: none;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -279,7 +372,7 @@ button {
   }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 550px) {
   .app-header h1 {
     font-size: 20px;
   }
@@ -297,8 +390,10 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .table-row,
   .admin-form,
-  .admin-actions {
+  .admin-actions,
+  .admin-product-row {
     grid-template-columns: 1fr;
   }
 }

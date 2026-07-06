@@ -11,10 +11,13 @@ const DEFAULT_PRODUCTS = [
   { id: 10, name: "Cappuccino", price: 3.20, category: "Kaffee", tax: 19 }
 ];
 
-let products = load("products", DEFAULT_PRODUCTS);
+let products = load("products", structuredClone(DEFAULT_PRODUCTS));
 let sales = load("sales", []);
+let openTablesData = load("openTables", {});
 let cart = [];
+let currentTable = "-";
 let activeCategory = "Alle";
+let lastReceiptText = "";
 
 const categoryTabs = document.getElementById("categoryTabs");
 const productGrid = document.getElementById("productGrid");
@@ -25,13 +28,19 @@ document.getElementById("checkoutBtn").addEventListener("click", checkout);
 document.getElementById("clearCartBtn").addEventListener("click", clearCart);
 document.getElementById("showAdminBtn").addEventListener("click", showAdmin);
 document.getElementById("closeAdminBtn").addEventListener("click", closeAdmin);
-document.getElementById("addProductBtn").addEventListener("click", addProduct);
+document.getElementById("addProductBtn").addEventListener("click", saveProductFromAdmin);
+document.getElementById("cancelEditBtn").addEventListener("click", clearProductForm);
 document.getElementById("exportSalesBtn").addEventListener("click", exportSales);
+document.getElementById("exportTablesBtn").addEventListener("click", exportTables);
 document.getElementById("resetDataBtn").addEventListener("click", resetData);
+document.getElementById("loadTableBtn").addEventListener("click", loadTableFromInput);
+document.getElementById("saveTableBtn").addEventListener("click", saveCurrentTable);
+document.getElementById("printReceiptBtn").addEventListener("click", printReceipt);
 
 function load(key, fallback) {
   try {
-    return JSON.parse(localStorage.getItem(key)) || fallback;
+    const value = JSON.parse(localStorage.getItem(key));
+    return value ?? fallback;
   } catch {
     return fallback;
   }
@@ -87,7 +96,7 @@ function renderProducts() {
     button.innerHTML = `
       <strong>${escapeHtml(product.name)}</strong>
       <span>${money(product.price)}</span><br>
-      <small>${product.category} · ${product.tax}% MwSt</small>
+      <small>${escapeHtml(product.category)} · ${product.tax}% MwSt</small>
     `;
 
     button.addEventListener("click", () => addToCart(product.id));
@@ -107,6 +116,7 @@ function addToCart(productId) {
     cart.push({ ...product, quantity: 1 });
   }
 
+  autoSaveTable();
   renderCart();
 }
 
@@ -120,13 +130,20 @@ function changeQuantity(productId, change) {
     cart = cart.filter(product => product.id !== productId);
   }
 
+  autoSaveTable();
   renderCart();
 }
 
 function clearCart() {
+  const ok = confirm("Warenkorb wirklich leeren?");
+  if (!ok) return;
+
   cart = [];
+  delete openTablesData[currentTable];
+  save("openTables", openTablesData);
+
   receiptBox.style.display = "none";
-  renderCart();
+  renderAll();
 }
 
 function calculateTotals() {
@@ -163,6 +180,8 @@ function calculateTotals() {
 function renderCart() {
   cartItems.innerHTML = "";
 
+  document.getElementById("currentTableText").textContent = currentTable;
+
   if (cart.length === 0) {
     cartItems.innerHTML = `<p class="empty-cart">Noch keine Produkte gewählt.</p>`;
   }
@@ -198,16 +217,107 @@ function renderCart() {
   document.getElementById("total").textContent = money(totals.total);
 }
 
+function loadTableFromInput() {
+  const table = document.getElementById("activeTable").value.trim();
+
+  if (!table) {
+    alert("Bitte Tisch eingeben, z. B. Tisch 5.");
+    return;
+  }
+
+  loadTable(table);
+}
+
+function loadTable(table) {
+  if (cart.length > 0 && currentTable !== table) {
+    autoSaveTable();
+  }
+
+  currentTable = table;
+  document.getElementById("activeTable").value = table;
+  cart = openTablesData[table] ? structuredClone(openTablesData[table].items) : [];
+
+  receiptBox.style.display = "none";
+  renderAll();
+}
+
+function saveCurrentTable() {
+  const tableInput = document.getElementById("activeTable").value.trim();
+
+  if (tableInput) {
+    currentTable = tableInput;
+  }
+
+  if (currentTable === "-") {
+    alert("Bitte zuerst Tisch eingeben.");
+    return;
+  }
+
+  if (cart.length === 0) {
+    alert("Der Tisch ist leer.");
+    return;
+  }
+
+  openTablesData[currentTable] = {
+    table: currentTable,
+    items: structuredClone(cart),
+    savedAt: new Date().toISOString()
+  };
+
+  save("openTables", openTablesData);
+  renderOpenTables();
+
+  alert("Tisch wurde gespeichert.");
+}
+
+function autoSaveTable() {
+  if (currentTable === "-" || cart.length === 0) return;
+
+  openTablesData[currentTable] = {
+    table: currentTable,
+    items: structuredClone(cart),
+    savedAt: new Date().toISOString()
+  };
+
+  save("openTables", openTablesData);
+  renderOpenTables();
+}
+
+function renderOpenTables() {
+  const box = document.getElementById("openTables");
+  const tableNames = Object.keys(openTablesData);
+
+  if (tableNames.length === 0) {
+    box.innerHTML = "<small>Keine offenen Tische.</small>";
+    return;
+  }
+
+  box.innerHTML = "";
+
+  tableNames.forEach(table => {
+    const button = document.createElement("button");
+    button.className = "open-table-btn";
+    button.textContent = table;
+    button.addEventListener("click", () => loadTable(table));
+    box.appendChild(button);
+  });
+}
+
 async function checkout() {
   if (cart.length === 0) {
     alert("Der Warenkorb ist leer.");
     return;
   }
 
+  if (currentTable === "-") {
+    const tableInput = document.getElementById("activeTable").value.trim();
+    currentTable = tableInput || "-";
+  }
+
   const order = {
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
-    tableNumber: document.getElementById("tableNumber").value.trim() || "-",
+    tableNumber: currentTable,
     paymentMethod: document.getElementById("paymentMethod").value,
     items: structuredClone(cart),
     totals: calculateTotals()
@@ -227,25 +337,30 @@ async function checkout() {
   sales.push(sale);
   save("sales", sales);
 
+  delete openTablesData[currentTable];
+  save("openTables", openTablesData);
+
   showReceipt(sale);
 
   cart = [];
-  renderCart();
+  currentTable = "-";
+  document.getElementById("activeTable").value = "";
+
+  renderAll();
 }
 
 async function startTseTransaction(order) {
   /*
     HIER kommt später die echte Swissbit-TSE-Anbindung.
 
-    Der Browser kann normalerweise NICHT direkt mit USB/SD/microSD TSE sprechen.
-    Darum brauchen wir später wahrscheinlich ein Backend oder eine Middleware.
+    GitHub Pages allein kann nicht direkt mit Swissbit USB/SD/microSD sprechen.
+    Dafür brauchen wir später:
+    - lokales Backend
+    - Middleware
+    - oder eine passende Swissbit/Fiskal-Lösung
 
-    Spätere Idee:
-    fetch("http://localhost:3000/api/tse/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(order)
-    })
+    Beispiel später:
+    fetch("http://localhost:3000/api/tse/start", ...)
   */
 
   return {
@@ -259,11 +374,6 @@ async function startTseTransaction(order) {
 }
 
 async function finishTseTransaction(order, tseStart) {
-  /*
-    Später wird hier die echte Transaktion beendet.
-    Die echte TSE gibt dann echte Signaturdaten zurück.
-  */
-
   return {
     finishedAt: new Date().toISOString()
   };
@@ -302,11 +412,22 @@ function showReceipt(sale) {
   lines.push("--------------------------------");
   lines.push("Danke für Ihren Besuch!");
 
-  receiptBox.textContent = lines.join("\n");
+  lastReceiptText = lines.join("\n");
+  receiptBox.textContent = lastReceiptText;
   receiptBox.style.display = "block";
 }
 
+function printReceipt() {
+  if (!lastReceiptText && receiptBox.textContent.trim() === "") {
+    alert("Es gibt noch keinen Bon zum Drucken.");
+    return;
+  }
+
+  window.print();
+}
+
 function showAdmin() {
+  renderAdminProductList();
   document.getElementById("adminModal").classList.remove("hidden");
 }
 
@@ -314,7 +435,8 @@ function closeAdmin() {
   document.getElementById("adminModal").classList.add("hidden");
 }
 
-function addProduct() {
+function saveProductFromAdmin() {
+  const editId = document.getElementById("editProductId").value;
   const name = document.getElementById("newProductName").value.trim();
   const price = Number(document.getElementById("newProductPrice").value);
   const category = document.getElementById("newProductCategory").value.trim();
@@ -325,27 +447,98 @@ function addProduct() {
     return;
   }
 
-  products.push({
-    id: Date.now(),
-    name,
-    price,
-    category,
-    tax
-  });
+  if (editId) {
+    const product = products.find(item => String(item.id) === String(editId));
+
+    if (product) {
+      product.name = name;
+      product.price = price;
+      product.category = category;
+      product.tax = tax;
+    }
+  } else {
+    products.push({
+      id: Date.now(),
+      name,
+      price,
+      category,
+      tax
+    });
+  }
 
   save("products", products);
+  clearProductForm();
+  renderAll();
+  renderAdminProductList();
+}
 
+function editProduct(productId) {
+  const product = products.find(item => item.id === productId);
+  if (!product) return;
+
+  document.getElementById("editProductId").value = product.id;
+  document.getElementById("newProductName").value = product.name;
+  document.getElementById("newProductPrice").value = product.price;
+  document.getElementById("newProductCategory").value = product.category;
+  document.getElementById("newProductTax").value = product.tax;
+}
+
+function deleteProduct(productId) {
+  const product = products.find(item => item.id === productId);
+  if (!product) return;
+
+  const ok = confirm(`Produkt löschen: ${product.name}?`);
+  if (!ok) return;
+
+  products = products.filter(item => item.id !== productId);
+  save("products", products);
+
+  renderAll();
+  renderAdminProductList();
+}
+
+function clearProductForm() {
+  document.getElementById("editProductId").value = "";
   document.getElementById("newProductName").value = "";
   document.getElementById("newProductPrice").value = "";
   document.getElementById("newProductCategory").value = "";
   document.getElementById("newProductTax").value = "19";
+}
 
-  activeCategory = category;
-  render();
+function renderAdminProductList() {
+  const list = document.getElementById("adminProductList");
+  list.innerHTML = "";
+
+  products.forEach(product => {
+    const row = document.createElement("div");
+    row.className = "admin-product-row";
+
+    row.innerHTML = `
+      <div>
+        <strong>${escapeHtml(product.name)}</strong><br>
+        <small>${money(product.price)} · ${escapeHtml(product.category)} · ${product.tax}% MwSt</small>
+      </div>
+      <button class="edit-btn">Bearbeiten</button>
+      <button class="delete-btn">Löschen</button>
+    `;
+
+    row.querySelector(".edit-btn").addEventListener("click", () => editProduct(product.id));
+    row.querySelector(".delete-btn").addEventListener("click", () => deleteProduct(product.id));
+
+    list.appendChild(row);
+  });
 }
 
 function exportSales() {
-  const blob = new Blob([JSON.stringify(sales, null, 2)], {
+  downloadJson("umsatz-export.json", sales);
+}
+
+function exportTables() {
+  downloadJson("offene-tische.json", openTablesData);
+}
+
+function downloadJson(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: "application/json"
   });
 
@@ -353,26 +546,37 @@ function exportSales() {
   const link = document.createElement("a");
 
   link.href = url;
-  link.download = "umsatz-export.json";
+  link.download = filename;
   link.click();
 
   URL.revokeObjectURL(url);
 }
 
 function resetData() {
-  const ok = confirm("Wirklich alle Produkte und Umsätze löschen?");
+  const ok = confirm("Wirklich alle Produkte, Tische und Umsätze löschen?");
   if (!ok) return;
 
   localStorage.removeItem("products");
   localStorage.removeItem("sales");
+  localStorage.removeItem("openTables");
 
   products = structuredClone(DEFAULT_PRODUCTS);
   sales = [];
+  openTablesData = {};
   cart = [];
+  currentTable = "-";
   activeCategory = "Alle";
 
-  render();
+  clearProductForm();
+  renderAll();
   closeAdmin();
+}
+
+function renderAll() {
+  renderCategories();
+  renderProducts();
+  renderOpenTables();
+  renderCart();
 }
 
 function escapeHtml(text) {
@@ -384,6 +588,4 @@ function escapeHtml(text) {
     .replaceAll("'", "&#039;");
 }
 
-renderCategories();
-renderProducts();
-renderCart();
+renderAll();

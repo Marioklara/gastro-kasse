@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Gastro Kasse</title>
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="app-header">
     <h1>🍽️ Gastro Kasse</h1>
-    <p>Einfaches Kassensystem für Restaurant · Handy · Tablet · PC</p>
+    <p>Restaurant · Handy · Tablet · PC · TSE vorbereitet</p>
   </header>
 
   <main class="app-layout">
@@ -21,12 +20,22 @@
         <button class="secondary-btn" id="showAdminBtn">Admin</button>
       </div>
 
+      <div class="table-box">
+        <label for="activeTable">Tisch wählen</label>
+        <div class="table-row">
+          <input id="activeTable" type="text" placeholder="z. B. Tisch 5" />
+          <button class="secondary-btn" id="loadTableBtn">Öffnen</button>
+          <button class="primary-small-btn" id="saveTableBtn">Tisch speichern</button>
+        </div>
+        <div id="openTables" class="open-tables"></div>
+      </div>
+
       <div id="categoryTabs" class="category-tabs"></div>
       <div id="productGrid" class="product-grid"></div>
 
       <div class="legal-note">
         <strong>Wichtig:</strong> Diese Version ist ein Prototyp.
-        Für echten Einsatz in Deutschland brauchst du eine echte zertifizierte TSE-Anbindung,
+        Für echten Einsatz in Deutschland brauchst du echte zertifizierte TSE,
         GoBD-konforme Speicherung und DSFinV-K Export.
       </div>
     </section>
@@ -34,8 +43,9 @@
     <aside class="panel cart-panel">
       <h2>Bestellung</h2>
 
-      <label for="tableNumber">Tisch / Bestellung</label>
-      <input id="tableNumber" type="text" placeholder="z. B. Tisch 5" />
+      <div class="current-table">
+        Aktueller Tisch: <strong id="currentTableText">-</strong>
+      </div>
 
       <div id="cartItems" class="cart-items"></div>
 
@@ -70,6 +80,7 @@
       </select>
 
       <button class="primary-btn" id="checkoutBtn">Bezahlen / Bon erstellen</button>
+      <button class="secondary-btn full-btn" id="printReceiptBtn">Bon drucken</button>
       <button class="danger-btn" id="clearCartBtn">Warenkorb leeren</button>
 
       <pre id="receiptBox" class="receipt-box"></pre>
@@ -83,7 +94,9 @@
         <button class="secondary-btn" id="closeAdminBtn">Schließen</button>
       </div>
 
-      <h3>Neues Produkt</h3>
+      <h3>Produkt hinzufügen / bearbeiten</h3>
+
+      <input id="editProductId" type="hidden" />
 
       <div class="admin-form">
         <input id="newProductName" type="text" placeholder="Produktname" />
@@ -94,18 +107,23 @@
           <option value="7">7% MwSt</option>
         </select>
         <button class="primary-btn" id="addProductBtn">Produkt speichern</button>
+        <button class="secondary-btn" id="cancelEditBtn">Bearbeitung abbrechen</button>
       </div>
+
+      <h3>Produktliste</h3>
+      <div id="adminProductList" class="admin-product-list"></div>
 
       <h3>Daten</h3>
       <div class="admin-actions">
         <button class="secondary-btn" id="exportSalesBtn">Umsätze exportieren</button>
+        <button class="secondary-btn" id="exportTablesBtn">Offene Tische exportieren</button>
         <button class="danger-btn" id="resetDataBtn">Alle Daten löschen</button>
       </div>
 
       <h3>TSE Status</h3>
       <div class="tse-status">
         <p><strong>Status:</strong> DEMO / noch keine echte TSE</p>
-        <p>Später wird hier Swissbit angebunden.</p>
+        <p>Später wird hier Swissbit über Backend oder Middleware angebunden.</p>
       </div>
     </div>
   </section>
