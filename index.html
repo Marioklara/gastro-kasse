@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>Gastro Kasse Pro</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Gastro POS</p>
+        <h1>Gastro Kasse Pro</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="installBtn" title="App installieren" hidden>Installieren</button>
+        <button class="ghost-btn" id="adminBtn">Admin</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="order-area" aria-label="Speisekarte und Tische">
+        <div class="status-strip">
+          <div>
+            <span class="label">Tisch</span>
+            <strong id="currentTableLabel">Außer Haus</strong>
+          </div>
+          <div>
+            <span class="label">TSE</span>
+            <strong id="tseStatusLabel">Demo</strong>
+          </div>
+          <div>
+            <span class="label">Offen</span>
+            <strong id="openTablesCount">0</strong>
+          </div>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="field-inline">
+            <label for="tableInput">Tisch / Gast</label>
+            <input id="tableInput" autocomplete="off" placeholder="z. B. Tisch 4, Bar 2">
+          </div>
+          <button class="secondary-btn" id="openTableBtn">Öffnen</button>
+          <button class="secondary-btn" id="saveTableBtn">Parken</button>
+        </div>
+
+        <div class="open-table-list" id="openTableList"></div>
+
+        <div class="menu-head">
+          <div>
+            <p class="eyebrow">Verkauf</p>
+            <h2>Speisekarte</h2>
+          </div>
+          <input class="search" id="searchInput" placeholder="Suchen">
+        </div>
+
+        <nav class="category-tabs" id="categoryTabs" aria-label="Kategorien"></nav>
+        <div class="product-grid" id="productGrid"></div>
+      </section>
+
+      <aside class="checkout-area" aria-label="Bestellung">
+        <div class="cart-head">
+          <div>
+            <p class="eyebrow">Aktueller Bon</p>
+            <h2 id="cartTitle">Bestellung</h2>
+          </div>
+          <button class="ghost-btn danger-text" id="clearCartBtn">Leeren</button>
+        </div>
+
+        <div class="cart-list" id="cartItems"></div>
+
+        <div class="totals">
+          <div><span>Netto 19%</span><strong id="net19">0,00 €</strong></div>
+          <div><span>MwSt 19%</span><strong id="tax19">0,00 €</strong></div>
+          <div><span>Netto 7%</span><strong id="net7">0,00 €</strong></div>
+          <div><span>MwSt 7%</span><strong id="tax7">0,00 €</strong></div>
+          <div class="grand-total"><span>Gesamt</span><strong id="total">0,00 €</strong></div>
+        </div>
+
+        <div class="payment-grid">
+          <button class="pay-method active" data-payment="Bar">Bar</button>
+          <button class="pay-method" data-payment="Karte">Karte</button>
+          <button class="pay-method" data-payment="Gutschein">Gutschein</button>
+        </div>
+
+        <button class="primary-btn" id="checkoutBtn">Kassieren</button>
+        <button class="secondary-btn full" id="printReceiptBtn">Bon drucken</button>
+        <pre class="receipt" id="receiptBox"></pre>
+      </aside>
+    </main>
+  </div>
+
+  <dialog class="admin-dialog" id="adminDialog">
+    <form method="dialog" class="dialog-panel">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Backoffice</p>
+          <h2>Administration</h2>
+        </div>
+        <button class="ghost-btn" value="close">Schließen</button>
+      </div>
+
+      <div class="admin-tabs" role="tablist">
+        <button type="button" class="admin-tab active" data-admin-tab="products">Artikel</button>
+        <button type="button" class="admin-tab" data-admin-tab="tse">TSE</button>
+        <button type="button" class="admin-tab" data-admin-tab="reports">Berichte</button>
+        <button type="button" class="admin-tab" data-admin-tab="settings">Betrieb</button>
+      </div>
+
+      <section class="admin-pane active" id="productsPane">
+        <div class="admin-form">
+          <input id="productId" type="hidden">
+          <label>Name<input id="productName" placeholder="Artikelname"></label>
+          <label>Preis<input id="productPrice" type="number" min="0" step="0.01" placeholder="0,00"></label>
+          <label>Kategorie<input id="productCategory" placeholder="Kategorie"></label>
+          <label>MwSt
+            <select id="productTax">
+              <option value="19">19%</option>
+              <option value="7">7%</option>
+            </select>
+          </label>
+          <button type="button" class="primary-btn" id="saveProductBtn">Artikel speichern</button>
+          <button type="button" class="secondary-btn" id="cancelProductBtn">Abbrechen</button>
+        </div>
+        <div class="admin-list" id="productAdminList"></div>
+      </section>
+
+      <section class="admin-pane" id="tsePane">
+        <div class="tse-card">
+          <div>
+            <span class="badge" id="tseModeBadge">DEMO</span>
+            <h3 id="tseHeadline">TSE nicht verbunden</h3>
+            <p id="tseDetail">Für den produktiven Betrieb bitte eine zertifizierte TSE-Middleware oder eine unterstützte USB-TSE verbinden.</p>
+          </div>
+          <div class="tse-actions">
+            <button type="button" class="secondary-btn" id="connectMiddlewareBtn">Middleware verbinden</button>
+            <button type="button" class="secondary-btn" id="connectUsbBtn">USB-TSE suchen</button>
+            <button type="button" class="ghost-btn" id="demoTseBtn">Demo verwenden</button>
+          </div>
+        </div>
+        <div class="endpoint-row">
+          <label>Lokale TSE-Middleware
+            <input id="middlewareUrl" value="http://127.0.0.1:8080">
+          </label>
+          <p class="hint">Erwartete Endpunkte: <code>/health</code>, <code>/transaction/start</code>, <code>/transaction/finish</code>. Die Middleware muss die zertifizierte TSE steuern.</p>
+        </div>
+      </section>
+
+      <section class="admin-pane" id="reportsPane">
+        <div class="report-grid">
+          <button type="button" class="secondary-btn" id="exportSalesBtn">Umsätze exportieren</button>
+          <button type="button" class="secondary-btn" id="exportTablesBtn">Offene Tische exportieren</button>
+          <button type="button" class="secondary-btn" id="exportDsfinkBtn">DSFinV-K Daten exportieren</button>
+          <button type="button" class="danger-btn" id="resetBtn">Alle lokalen Daten löschen</button>
+        </div>
+        <div class="sales-list" id="salesList"></div>
+      </section>
+
+      <section class="admin-pane" id="settingsPane">
+        <div class="settings-grid">
+          <label>Betriebsname<input id="businessName"></label>
+          <label>Adresse<input id="businessAddress"></label>
+          <label>Bon-Fußzeile<input id="receiptFooter"></label>
+          <button type="button" class="primary-btn" id="saveSettingsBtn">Einstellungen speichern</button>
+        </div>
+      </section>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
